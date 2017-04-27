@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="mobile-web-app-capable" content="yes">
+		<!--<link rel="icon" href="favicon.png"></link>
+		<link rel="apple-touch-icon" href="favicon.png"></link>-->
+		<style>
+			*{
+				padding: 0;
+				margin:  0;
+				background: #08F;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.8/p5.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.8/addons/p5.dom.min.js"></script>
+		<script>
+			var ellipses = [];
+			var pullTowards = [];
+			var enabled = false;
+			var force;
+			
+			function setup() {
+				if(document.location.href.split("#").length<=1){
+					document.location.href = document.location.href + "#no";
+				};
+				enabled = document.location.href.split("#")[1]=="yes"||document.location.href.split("#")[1]=="true"||document.location.href.split("#")[1]=="";
+				createCanvas(window.innerWidth, window.innerHeight-40);
+				noStroke();
+				pullTowards.push({x:width/2,y:height/2,force:0.2});
+				force = createSlider(0, 10, 2);
+				force.position(window.innerWidth/2-30,window.innerHeight-30);
+				while(ellipses.length < 10){
+					ellipses.push(new Ellipse());
+				}
+			}
+			
+			function draw() {
+				background(0,0,0,50);
+				for(var i=0; i<ellipses.length; i++){
+					ellipses[i].update();
+					ellipses[i].show();
+				}
+				for(var i=0; i<pullTowards.length; i++){
+					fill(125,0,0,125);
+					ellipse(pullTowards[i].x,pullTowards[i].y,16,16);
+				}
+			}
+			
+			function mouseClicked(){
+				if(mouseX < width && mouseY < height){
+					if(enabled){
+						pullTowards.splice(0);
+						pullTowards.push({x:mouseX,y:mouseY,force:force.value()/10});
+					} else {
+						ellipses.push(new Ellipse(mouseX,mouseY));
+					}
+				} else {
+					pullTowards[pullTowards.length-1].force = force.value()/10;
+				}
+			}
+			
+			
+			function Ellipse(x, y) {
+				this.x = x||random(width*0.1,width*0.9);
+				this.y = y||random(height*0.1,height*0.9);
+				this.color = color(random(25)*10,random(25)*10,random(25)*10);
+				this.velX = random(-0.1,0.1)*40;
+				this.velY = random(-0.1,0.1)*40;
+			}
+			
+			Ellipse.prototype.update = function() {
+				this.x += this.velX;
+				this.y += this.velY;
+				for(var i=0; i<pullTowards.length; i++){
+					if(this.x>pullTowards[i].x) this.velX -= pullTowards[i].force;
+					if(this.x<pullTowards[i].x) this.velX += pullTowards[i].force;
+					if(this.y>pullTowards[i].y) this.velY -= pullTowards[i].force;
+					if(this.y<pullTowards[i].y) this.velY += pullTowards[i].force;
+				}
+			}
+			
+			Ellipse.prototype.show = function() {
+				ellipseMode(CENTER);
+				fill(this.color);
+				ellipse(this.x, this.y, 32, 32);
+			}
+		</script>
+	</body>
+</html>
